@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="dashboard-hero">
+    <div class="dashboard-hero-copy">
+        <span class="eyebrow">Analysis complete</span>
+        <h1>Resume matching dashboard</h1>
+        <p>Review ATS performance, skill alignment, keyword density, and tailored actions to strengthen your application.</p>
+    </div>
+    <div class="dashboard-hero-badge glass-card">
+        <span class="eyebrow">Recommended role</span>
+        <h2>{{ role_predictions[0] if role_predictions else 'Professional Candidate' }}</h2>
+        <p>{{ role_predictions|join(', ') }}</p>
+    </div>
+</section>
+
+<main class="dashboard-grid">
+    <section class="panel glass-card fade-in-up span-4">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Score breakdown</span>
+                <h2>Performance overview</h2>
+            </div>
+            <span class="badge">ATS Score</span>
+        </div>
+
+        <div class="score-dashboard">
+            <div class="score-ring" style="--score: {{ resume_score }};">
+                <span>{{ resume_score }}%</span>
+            </div>
+            <div class="score-list">
+                <div class="score-item">
+                    <p>Skills</p>
+                    <strong>{{ score_breakdown.skills_score }}%</strong>
+                </div>
+                <div class="score-item">
+                    <p>Density</p>
+                    <strong>{{ score_breakdown.keyword_density_score }}%</strong>
+                </div>
+                <div class="score-item">
+                    <p>Sections</p>
+                    <strong>{{ score_breakdown.section_score }}%</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-1 span-4">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Resume health</span>
+                <h2>Section coverage</h2>
+            </div>
+        </div>
+        <div class="section-report">
+            {% for name, present in section_report.sections.items() %}
+            <div class="section-pill {{ 'active' if present else 'missing' }}">
+                <span>{{ name }}</span>
+                <strong>{{ 'Present' if present else 'Missing' }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+        {% if section_report.missing_sections %}
+        <p class="hint-text">Missing sections: {{ section_report.missing_sections|join(', ') }}</p>
+        {% endif %}
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-2 span-4">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Skill alignment</span>
+                <h2>Matched & missing skills</h2>
+            </div>
+        </div>
+        <div class="skill-block">
+            <div>
+                <h3>Matched skills</h3>
+                <div class="tag-list">
+                    {% if matched_skills %}
+                        {% for skill in matched_skills %}
+                            <span class="tag tag-success">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="tag tag-muted">No matches found</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <h3>Missing skills</h3>
+                <div class="tag-list">
+                    {% if missing_skills %}
+                        {% for skill in missing_skills %}
+                            <span class="tag tag-warning">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="tag tag-success">All skills aligned</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-2 span-6">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Keyword insights</span>
+                <h2>ATS keyword density</h2>
+            </div>
+        </div>
+        <div class="density-grid">
+            {% for skill, count in keyword_density.items() %}
+            <div class="density-row">
+                <div class="density-label">
+                    <span>{{ skill }}</span>
+                    <strong>{{ count }}x</strong>
+                </div>
+                <div class="density-bar">
+                    <div class="density-fill" style="width: {{ (count * 18 if count * 18 < 100 else 100) }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-3 suggestions-panel span-6">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Smart suggestions</span>
+                <h2>Next steps for optimization</h2>
+            </div>
+        </div>
+        <div class="suggestion-grid">
+            {% for suggestion in smart_suggestions %}
+            <div class="suggestion-card">
+                <span class="suggestion-icon">✓</span>
+                <p>{{ suggestion }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-3 preview-panel span-6">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Resume preview</span>
+                <h2>Extracted content</h2>
+            </div>
+        </div>
+        <div class="preview-block">
+            <pre>{{ resume_text[:preview_limit] }}{% if resume_text|length > preview_limit %}...{% endif %}</pre>
+        </div>
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-4 preview-panel span-3">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Job description</span>
+                <h2>Role details</h2>
+            </div>
+        </div>
+        <div class="preview-block">
+            <pre>{{ job_description[:preview_limit] }}{% if job_description|length > preview_limit %}...{% endif %}</pre>
+        </div>
+    </section>
+
+    <section class="panel glass-card fade-in-up delay-4 preview-panel span-3">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Optimized resume</span>
+                <h2>Improved draft</h2>
+            </div>
+        </div>
+        <div class="preview-block">
+            <pre>{{ optimized_resume[:preview_limit] }}{% if optimized_resume|length > preview_limit %}...{% endif %}</pre>
+        </div>
+    </section>
+
+    <div class="button-row full-width">
+        <a href="{{ url_for('index') }}" class="button button-secondary">Analyze another resume</a>
+    </div>
+</main>
+{% endblock %}

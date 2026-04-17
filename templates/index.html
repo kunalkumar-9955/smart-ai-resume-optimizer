@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="landing-shell">
+    <section class="landing-hero">
+        <div class="hero-content">
+            <span class="eyebrow">AI Resume Analyzer</span>
+            <h1>Turn your resume into recruiter-ready ATS success.</h1>
+            <p class="hero-description">Upload your resume, paste the job description, and get instant feedback with modern skill matching, score tracking, and optimization advice.</p>
+            <div class="hero-actions">
+                <a href="#analysis" class="button button-primary">Analyze Resume</a>
+                <span class="hero-pill">PDF + DOCX · ATS-friendly · Fast results</span>
+            </div>
+        </div>
+
+        <div class="hero-card glass-card">
+            <div class="hero-metrics">
+                <div>
+                    <span class="stat-label">ATS score</span>
+                    <strong>94%</strong>
+                </div>
+                <div>
+                    <span class="stat-label">Skill fit</span>
+                    <strong>87%</strong>
+                </div>
+            </div>
+            <div class="hero-preview">
+                <div class="preview-pill">Smart suggestions</div>
+                <p>Improve bullet points, align keywords, and present a stronger candidate profile for recruiters.</p>
+            </div>
+        </div>
+    </section>
+
+    <main class="page-grid" id="analysis">
+        <section class="form-card glass-card fade-in-up">
+            <div class="card-header">
+                <div>
+                    <span class="eyebrow">Resume review</span>
+                    <h2>Upload your resume</h2>
+                </div>
+                <p class="small-text">Drag and drop your file or click to browse. Supported formats: PDF, DOCX.</p>
+            </div>
+            <form action="{{ url_for('analyze') }}" method="post" enctype="multipart/form-data" class="form-grid">
+                <label class="upload-zone">
+                    <svg viewBox="0 0 24 24" class="upload-icon"><path fill="currentColor" d="M12 16l4-4h-3V4h-2v8H8l4 4zm6-2v6H6v-6H4v6c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-6h-2z"/></svg>
+                    <div>
+                        <strong>Upload your resume</strong>
+                        <p>Click to select a PDF / DOCX file</p>
+                        <span class="upload-filename" id="upload-filename">No file selected</span>
+                    </div>
+                    <input type="file" name="resume" id="resume" accept=".pdf,.docx" required />
+                </label>
+
+                <div class="field-group">
+                    <label for="job_description">Job description</label>
+                    <textarea id="job_description" name="job_description" rows="6"
+                        placeholder="Example: Looking for a Python Developer with skills in Python, SQL, Machine Learning, HTML, CSS..."
+                        required></textarea>
+                    <p class="input-note">A concise description helps generate more accurate match insights.</p>
+                    <p class="input-warning" id="jd-warning">Please provide a longer job description with at least 10 words.</p>
+                </div>
+
+                <div class="example-box">
+                    <span class="example-label">Example job description</span>
+                    <p>Looking for a Python Developer.</p>
+                    <p><strong>Required Skills:</strong> Python, SQL, Machine Learning, HTML, CSS</p>
+                    <p><strong>Responsibilities:</strong></p>
+                    <ul>
+                        <li>Build web applications</li>
+                        <li>Work on data analysis</li>
+                        <li>Develop ML models</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="button button-primary button-xl">Analyze Resume</button>
+            </form>
+        </section>
+
+        <section class="summary-card glass-card fade-in-up delay-1">
+            <div class="card-header">
+                <span class="eyebrow">Why it works</span>
+                <h2>Resume analysis built for modern hiring</h2>
+            </div>
+            <div class="feature-grid-sm">
+                <div class="feature-block">
+                    <h3>Smart skill detection</h3>
+                    <p>Identify the exact keywords recruiters want to see.</p>
+                </div>
+                <div class="feature-block">
+                    <h3>ATS-ready scoring</h3>
+                    <p>See how your resume performs against the job description.</p>
+                </div>
+                <div class="feature-block">
+                    <h3>Actionable feedback</h3>
+                    <p>Get suggestions that improve clarity and candidate fit.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}
