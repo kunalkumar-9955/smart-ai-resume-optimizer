@@ -2,23 +2,27 @@ import re
 from collections import Counter
 from io import BytesIO
 
-import spacy
+try:
+    import spacy
+except ImportError:
+    spacy = None
+
 from docx import Document
 from PyPDF2 import PdfReader
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from spacy.cli import download as spacy_download
 
-
-def load_spacy_model():
-    try:
-        return spacy.load("en_core_web_sm")
-    except OSError:
-        spacy_download("en_core_web_sm")
-        return spacy.load("en_core_web_sm")
-
-
-nlp = load_spacy_model()
+STOPWORDS = {
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as",
+    "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could",
+    "did", "do", "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had",
+    "has", "have", "having", "he", "her", "here", "hers", "herself", "him", "himself", "his", "how",
+    "i", "if", "in", "into", "is", "it", "its", "itself", "just", "me", "more", "most", "my",
+    "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our",
+    "ours", "ourselves", "out", "over", "own", "same", "she", "should", "so", "some", "such", "than",
+    "that", "the", "their", "theirs", "them", "themselves", "then", "there", "these", "they", "this",
+    "those", "through", "to", "too", "under", "until", "up", "very", "was", "we", "were", "what",
+    "when", "where", "which", "while", "who", "whom", "why", "with", "would", "you", "your", "yours",
+    "yourself", "yourselves"
+}
 
 CUSTOM_SKILLS = [
     "python",
@@ -173,11 +177,23 @@ def clean_text(text):
     return text.strip()
 
 
+def tokenize_text(text):
+    cleaned = clean_text(text)
+    tokens = [token for token in cleaned.split() if token and token not in STOPWORDS]
+    return tokens
+
+
 def preprocess_text(text):
     cleaned = clean_text(text)
-    doc = nlp(cleaned)
-    tokens = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
-    return " ".join(tokens)
+    if spacy:
+        try:
+            nlp = spacy.load("en_core_web_sm")
+            doc = nlp(cleaned)
+            tokens = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
+            return " ".join(tokens)
+        except Exception:
+            pass
+    return " ".join(tokenize_text(cleaned))
 
 
 def extract_skills(text):
@@ -229,14 +245,13 @@ def extract_skills_and_keywords(text):
 
 
 def compute_similarity_score(text_a, text_b):
-    corpus = [text_a, text_b]
-    vectorizer = TfidfVectorizer(max_features=500)
-    try:
-        tfidf_matrix = vectorizer.fit_transform(corpus)
-        similarity_matrix = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
-        return float(similarity_matrix[0][0])
-    except Exception:
+    tokens_a = set(tokenize_text(text_a))
+    tokens_b = set(tokenize_text(text_b))
+    if not tokens_a or not tokens_b:
         return 0.0
+    intersection = tokens_a.intersection(tokens_b)
+    union = tokens_a.union(tokens_b)
+    return float(len(intersection)) / max(len(union), 1)
 
 
 def compute_resume_score(matched_skills, missing_skills, similarity_score):
