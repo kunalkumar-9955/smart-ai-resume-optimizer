@@ -41,8 +41,11 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/analyze", methods=["POST"])
+@app.route("/analyze", methods=["GET", "POST"])
 def analyze():
+    if request.method == "GET":
+        return redirect(url_for("index"))
+
     resume_file = request.files.get("resume")
     job_description = request.form.get("job_description", "").strip()
 

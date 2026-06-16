@@ -11,6 +11,17 @@
 </head>
 <body>
     <div class="app-shell">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages" style="padding: 1rem; background-color: #fee2e2; color: #991b1b; text-align: center; border-bottom: 1px solid #f87171;">
+                    <ul style="list-style-type: none; margin: 0; padding: 0;">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </div>
     <script src="{{ url_for('static', filename='main.js') }}" defer></script>
